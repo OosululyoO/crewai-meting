@@ -1,10 +1,9 @@
-from crew import crew
+from crew import build_crew
 
-result = crew.kickoff(
-    inputs={
-        "user_question": "我想開公司，應該設立獨資、合夥還是有限公司？"
-    }
-)
+user_question = "我打算開一家公司，要選擇有限公司還是獨資？"
 
-print("\n\n✅ 最終建議：\n")
+crew = build_crew(user_question)
+
+result = crew.kickoff()
+print("\n✅ 最終建議輸出：\n")
 print(result)
