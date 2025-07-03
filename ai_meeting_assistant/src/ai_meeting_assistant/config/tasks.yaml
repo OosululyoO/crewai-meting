@@ -1,17 +1,20 @@
-research_task:
+analyze_from_accounting:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
-  expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+    使用者輸入了以下問題：
+    {user_question}
 
-reporting_task:
-  description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    你是一位資深會計師，請你根據會計與財務角度，詳細分析並提出建議。
+    最好能夠舉例並提供風險說明。
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    一份包含建議、風險分析與舉例的財務分析回覆
+  agent: accountant
+
+legal_review_and_comment:
+  description: >
+    會計師已經提供以下分析與建議：
+    {analyze_from_accounting}
+
+    你是一位律師，請你根據法律角度補充建議、修正潛在風險，並加入合法合規的聲明。
+  expected_output: >
+    一份簡潔專業的法律補充回應，包含任何風險與建議。
+  agent: lawyer
