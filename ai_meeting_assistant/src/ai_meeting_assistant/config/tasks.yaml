@@ -1,20 +1,9 @@
 analyze_from_accounting:
   description: >
-    使用者輸入了以下問題：
+    使用者輸入的問題是：
     {user_question}
 
-    你是一位資深會計師，請你根據會計與財務角度，詳細分析並提出建議。
-    最好能夠舉例並提供風險說明。
+    你是一位會計師，請從財務與稅務角度提供建議與風險分析。
   expected_output: >
-    一份包含建議、風險分析與舉例的財務分析回覆
+    詳細建議與說明
   agent: accountant
-
-legal_review_and_comment:
-  description: >
-    會計師已經提供以下分析與建議：
-    {analyze_from_accounting}
-
-    你是一位律師，請你根據法律角度補充建議、修正潛在風險，並加入合法合規的聲明。
-  expected_output: >
-    一份簡潔專業的法律補充回應，包含任何風險與建議。
-  agent: lawyer

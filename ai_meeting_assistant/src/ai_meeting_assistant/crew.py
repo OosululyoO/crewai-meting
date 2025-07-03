@@ -57,3 +57,30 @@ crew = Crew(
     process=Process.sequential,
     verbose=True
 )
+
+tasks = []
+
+print("📋 任務 ID 列表:")
+for task_id, config in tasks_config.items():
+    print("-", task_id)  # ✅ 這樣才正確，印出 YAML 中的 key
+
+    agent = agents[config["agent"]]
+    task = Task(config=config, agent=agent)
+    tasks.append(task)
+
+
+analyze_task = tasks[0]
+
+# 第二個任務：律師分析，引用 analyze_task 輸出
+legal_task = Task(
+    description=(
+        "以下是會計師提供的分析：\n"
+        "{analyze_from_accounting}\n\n"
+        "你是律師，請從法律角度補充建議，並指出潛在法律風險與合規建議。"
+    ),
+    expected_output="法律補充建議",
+    agent=agents["lawyer"]
+)
+
+# 加入任務清單
+tasks = [analyze_task, legal_task]
