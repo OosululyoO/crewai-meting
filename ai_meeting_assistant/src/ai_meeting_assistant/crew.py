@@ -1,64 +1,59 @@
-from crewai import Agent, Crew, Process, Task
-from crewai.project import CrewBase, agent, crew, task
-from crewai.agents.agent_builder.base_agent import BaseAgent
-from typing import List
-# If you want to run a snippet of code before or after the crew starts,
-# you can use the @before_kickoff and @after_kickoff decorators
-# https://docs.crewai.com/concepts/crews#example-crew-class-with-decorators
+import os
+import yaml
+from dotenv import load_dotenv
 
-@CrewBase
-class AiMeetingAssistant():
-    """AiMeetingAssistant crew"""
+from langchain_community.chat_models import ChatOpenAI
+from langchain_google_genai import GoogleGenerativeAI  # ✅ 用正確類別
 
-    agents: List[BaseAgent]
-    tasks: List[Task]
+from crewai import Agent, Task, Crew, Process
 
-    # Learn more about YAML configuration files here:
-    # Agents: https://docs.crewai.com/concepts/agents#yaml-configuration-recommended
-    # Tasks: https://docs.crewai.com/concepts/tasks#yaml-configuration-recommended
-    
-    # If you would like to add tools to your agents, you can learn more about it here:
-    # https://docs.crewai.com/concepts/agents#agent-tools
-    @agent
-    def researcher(self) -> Agent:
-        return Agent(
-            config=self.agents_config['researcher'], # type: ignore[index]
-            verbose=True
-        )
+# 讀取 .env 環境變數
+load_dotenv()
 
-    @agent
-    def reporting_analyst(self) -> Agent:
-        return Agent(
-            config=self.agents_config['reporting_analyst'], # type: ignore[index]
-            verbose=True
-        )
+# ---------- 讀取 YAML ----------
+def load_yaml_config(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
 
-    # To learn more about structured task outputs,
-    # task dependencies, and task callbacks, check out the documentation:
-    # https://docs.crewai.com/concepts/tasks#overview-of-a-task
-    @task
-    def research_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['research_task'], # type: ignore[index]
-        )
+# 設定 YAML 路徑（從 crew.py 相對位置）
+this_dir = os.path.dirname(__file__)
+agents_config = load_yaml_config(os.path.join(this_dir, "config/agents.yaml"))
+tasks_config = load_yaml_config(os.path.join(this_dir, "config/tasks.yaml"))
 
-    @task
-    def reporting_task(self) -> Task:
-        return Task(
-            config=self.tasks_config['reporting_task'], # type: ignore[index]
-            output_file='report.md'
-        )
+# ---------- 建立 LLM ----------
+openai_llm = ChatOpenAI(model_name="gpt-4", temperature=0.3)
 
-    @crew
-    def crew(self) -> Crew:
-        """Creates the AiMeetingAssistant crew"""
-        # To learn how to add knowledge sources to your crew, check out the documentation:
-        # https://docs.crewai.com/concepts/knowledge#what-is-knowledge
+# ✅ 使用 API KEY 存取 Gemini，不會觸發 GCP ADC 機制
+gemini_llm = GoogleGenerativeAI(
+    model="gemini-pro",
+    api_key=os.getenv("GOOGLE_API_KEY"),
+    temperature=0.3
+)
 
-        return Crew(
-            agents=self.agents, # Automatically created by the @agent decorator
-            tasks=self.tasks, # Automatically created by the @task decorator
-            process=Process.sequential,
-            verbose=True,
-            # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
-        )
+# ---------- 指派 LLM 到對應 agent ----------
+agent_llm_map = {
+    "accountant": openai_llm,
+    "lawyer": gemini_llm
+}
+
+# ---------- 建立 Agents ----------
+agents = {}
+for agent_id, config in agents_config.items():
+    agents[agent_id] = Agent(
+        config=config,
+        llm=agent_llm_map.get(agent_id)  # 使用者不綁 LLM OK
+    )
+
+# ---------- 建立 Tasks ----------
+tasks = []
+for task_id, config in tasks_config.items():
+    agent = agents[config["agent"]]
+    tasks.append(Task(config=config, agent=agent))
+
+# ---------- 建立 Crew ----------
+crew = Crew(
+    agents=list(agents.values()),
+    tasks=tasks,
+    process=Process.sequential,
+    verbose=True
+)
