@@ -87,36 +87,26 @@ else:
 
 # ---------- 建立任務流程（用程式定義） ----------
 def build_crew(user_question: str):
-    # 檢查 agents 是否已建立
-    if not agents:
-        raise Exception("❌ 沒有可用的 agents，請檢查 LLM 初始化")
-    
-    # 檢查兩個 agent 是否都可用
-    if "accountant" not in agents or "lawyer" not in agents:
-        raise Exception("❌ 需要會計師和律師兩個 agents 才能運作")
-    
-    # 會計師任務：從財務角度分析
+    if not agents or "accountant" not in agents or "lawyer" not in agents:
+        raise Exception("❌ 必須有會計師和律師 agents")
+
     analyze_task = Task(
         description=f"""
         作為專業會計師，請針對以下問題從財務與稅務角度提供分析：
-        
         問題：{user_question}
         """,
         expected_output="詳細的財務分析報告，包含稅務建議和風險評估",
         agent=agents["accountant"]
     )
 
-    # 律師任務：從法律角度提供意見
     legal_task = Task(
         description=f"""
         作為專業律師，請針對以下問題從法律角度提供分析：
-        
         問題：{user_question}
-        
         """,
         expected_output="完整的法律分析報告，結合財務考量提供綜合建議",
         agent=agents["lawyer"],
-        context=[analyze_task]  # 依賴會計師的分析結果
+        context=[analyze_task]
     )
 
     crew = Crew(
@@ -125,7 +115,8 @@ def build_crew(user_question: str):
         process=Process.sequential,
         verbose=True
     )
-    return crew
+
+    return crew, analyze_task, legal_task
 
 # 增加測試執行區塊
 if __name__ == "__main__":
