@@ -1,0 +1,283 @@
+
+
+=== ai_meeting_assistant/pyproject.toml ===
+[project]
+name = "ai_meeting_assistant"
+version = "0.1.0"
+description = "ai_meeting_assistant using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[tools]>=0.140.0,<1.0.0"
+]
+
+[project.scripts]
+ai_meeting_assistant = "ai_meeting_assistant.main:run"
+run_crew = "ai_meeting_assistant.main:run"
+train = "ai_meeting_assistant.main:train"
+replay = "ai_meeting_assistant.main:replay"
+test = "ai_meeting_assistant.main:test"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
+
+
+=== ai_meeting_assistant/README.md ===
+# AiMeetingAssistant Crew
+
+Welcome to the AiMeetingAssistant Crew project, powered by [crewAI](https://crewai.com). This template is designed to help you set up a multi-agent AI system with ease, leveraging the powerful and flexible framework provided by crewAI. Our goal is to enable your agents to collaborate effectively on complex tasks, maximizing their collective intelligence and capabilities.
+
+## Installation
+
+Ensure you have Python >=3.10 <3.14 installed on your system. This project uses [UV](https://docs.astral.sh/uv/) for dependency management and package handling, offering a seamless setup and execution experience.
+
+First, if you haven't already, install uv:
+
+```bash
+pip install uv
+```
+
+Next, navigate to your project directory and install the dependencies:
+
+(Optional) Lock the dependencies and install them by using the CLI command:
+```bash
+crewai install
+```
+### Customizing
+
+**Add your `OPENAI_API_KEY` into the `.env` file**
+
+- Modify `src/ai_meeting_assistant/config/agents.yaml` to define your agents
+- Modify `src/ai_meeting_assistant/config/tasks.yaml` to define your tasks
+- Modify `src/ai_meeting_assistant/crew.py` to add your own logic, tools and specific args
+- Modify `src/ai_meeting_assistant/main.py` to add custom inputs for your agents and tasks
+
+## Running the Project
+
+To kickstart your crew of AI agents and begin task execution, run this from the root folder of your project:
+
+```bash
+$ crewai run
+```
+
+This command initializes the ai_meeting_assistant Crew, assembling the agents and assigning them tasks as defined in your configuration.
+
+This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
+
+## Understanding Your Crew
+
+The ai_meeting_assistant Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
+
+## Support
+
+For support, questions, or feedback regarding the AiMeetingAssistant Crew or crewAI.
+- Visit our [documentation](https://docs.crewai.com)
+- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
+- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
+- [Chat with our docs](https://chatg.pt/DWjSBZn)
+
+Let's create wonders together with the power and simplicity of crewAI.
+
+
+=== ai_meeting_assistant/.gitignore ===
+.env
+__pycache__/
+.DS_Store
+
+
+=== ai_meeting_assistant/.env ===
+MODEL=gpt-4o
+OPENAI_API_KEY=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
+GOOGLE_API_KEY=AIzaSyDZDDvhc5-iRdv_vNdM9_1fAmvKDVBoRVY
+
+=== ai_meeting_assistant/all_code.py ===
+import os
+import datetime
+
+# 設定根目錄（你要輸出的資料夾）
+root_folder = './'  # ← 請改成你自己的資料夾路徑
+output_file = 'all_code.txt'
+output_file = f"{datetime.datetime.now().strftime('%Y%m%d_%H%M')}_{output_file}"
+
+# 設定輸出資料夾
+output_folder = './coderocord/'
+os.makedirs(output_folder, exist_ok=True)
+output_file = os.path.join(output_folder, output_file)
+
+def prompt_user(path):
+    rel_path = os.path.relpath(path, root_folder)
+    while True:
+        choice = input(f"是否要輸出 '{rel_path}' 的內容？(Y/N): ").strip().upper()
+        if choice in ['Y', 'N']:
+            return choice == 'Y'
+        print("請輸入 Y 或 N。")
+
+with open(output_file, 'w', encoding='utf-8') as out:
+    for name in os.listdir(root_folder):
+        full_path = os.path.join(root_folder, name)
+
+        if prompt_user(full_path):
+            if os.path.isfile(full_path):
+                try:
+                    with open(full_path, 'r', encoding='utf-8') as f:
+                        out.write(f"\n\n=== {name} ===\n")
+                        out.write(f.read())
+                except Exception as e:
+                    out.write(f"\n\n=== {name} ===\n")
+                    out.write(f"[無法讀取此檔案: {e}]\n")
+
+            elif os.path.isdir(full_path):
+                for foldername, _, filenames in os.walk(full_path):
+                    for filename in filenames:
+                        file_path = os.path.join(foldername, filename)
+                        rel = os.path.relpath(file_path, root_folder)
+                        try:
+                            with open(file_path, 'r', encoding='utf-8') as f:
+                                out.write(f"\n\n=== {rel} ===\n")
+                                out.write(f.read())
+                        except Exception as e:
+                            out.write(f"\n\n=== {rel} ===\n")
+                            out.write(f"[無法讀取此檔案: {e}]\n")
+
+print(f"\n✅ 輸出完成，請查看 {output_file}")
+
+
+=== ai_meeting_assistant/knowledge/user_preference.txt ===
+User name is John Doe.
+User is an AI Engineer.
+User is interested in AI Agents.
+User is based in San Francisco, California.
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__init__.py ===
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/crew.py ===
+import os
+import yaml
+from dotenv import load_dotenv
+
+from langchain_openai import ChatOpenAI
+from crewai import Agent, Task, Crew, Process
+
+# 讀取環境變數
+load_dotenv()
+
+# ---------- 讀取 YAML ----------
+def load_yaml_config(path):
+    with open(path, "r", encoding="utf-8") as f:
+        return yaml.safe_load(f)
+
+this_dir = os.path.dirname(__file__)
+agents_config = load_yaml_config(os.path.join(this_dir, "config/agents.yaml"))
+
+# ---------- 建立 LLM ----------
+openai_llm = ChatOpenAI(model="gpt-4", temperature=0.3)
+
+# ---------- 建立 Agents ----------
+agents = {}
+for agent_id, config in agents_config.items():
+    agents[agent_id] = Agent(
+        config=config,
+        llm=openai_llm
+    )
+
+# ---------- 建立任務流程（用程式定義） ----------
+def build_crew(user_question: str):
+    analyze_task = Task(
+        description=(
+            f"使用者輸入的問題是：\n{user_question}\n\n"
+            "你是一位會計師，請從財務與稅務角度提供建議與風險分析。"
+        ),
+        expected_output="詳細建議與說明",
+        agent=agents["accountant"]
+    )
+
+    legal_task = Task(
+        description=(
+            "你是律師，請根據會計師的分析結果，從法律角度補充建議，並指出潛在法律風險與合規建議。"
+        ),
+        expected_output="法律補充建議",
+        agent=agents["lawyer"],
+        context=[analyze_task]
+    )
+
+    crew = Crew(
+        agents=[agents["accountant"], agents["lawyer"]],
+        tasks=[analyze_task, legal_task],
+        process=Process.sequential,
+        verbose=True
+    )
+    return crew
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/main.py ===
+from crew import build_crew
+
+user_question = "我打算開一家公司，要選擇有限公司還是獨資？"
+
+crew = build_crew(user_question)
+
+result = crew.kickoff()
+print("\n✅ 最終建議輸出：\n")
+print(result)
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/tools/__init__.py ===
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/tools/custom_tool.py ===
+from crewai.tools import BaseTool
+from typing import Type
+from pydantic import BaseModel, Field
+
+
+class MyCustomToolInput(BaseModel):
+    """Input schema for MyCustomTool."""
+    argument: str = Field(..., description="Description of the argument.")
+
+class MyCustomTool(BaseTool):
+    name: str = "Name of my tool"
+    description: str = (
+        "Clear description for what this tool is useful for, your agent will need this information to use it."
+    )
+    args_schema: Type[BaseModel] = MyCustomToolInput
+
+    def _run(self, argument: str) -> str:
+        # Implementation goes here
+        return "this is an example of a tool output, ignore it and move along."
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/config/agents.yaml ===
+accountant:
+  role: 會計師
+  goal: 提供財務與稅務建議
+  backstory: 擁有多年企業財務經驗的專業會計師，專精於稅務規劃與財務分析。
+
+lawyer:
+  role: 律師
+  goal: 提供法律建議與合規分析
+  backstory: 熟悉公司法與商業法律的律師，專注於企業合規與風險管理。
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/config/tasks.yaml ===
+analyze_from_accounting:
+  description: >
+    使用者輸入的問題是：
+    {user_question}
+
+    你是一位會計師，請從財務與稅務角度提供建議與風險分析。
+  expected_output: >
+    詳細建議與說明
+  agent: accountant
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/crew.cpython-311.pyc ===
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/crew.cpython-311.pyc ===
+[無法讀取此檔案: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte]
