@@ -12,21 +12,41 @@ if not openai_key:
 if not google_key:
     print("⚠️  警告：未找到 GOOGLE_API_KEY")
 
+# 初始化對話紀錄
+conversation_history = []
+
+# 進入互動式對話迴圈
 while True:
-    user_question = input("請輸入您的問題（輸入 'exit' 結束程式）：\n")
-    if user_question.lower() == 'exit':
-        print("👋 感謝使用 AI 會議助手，再見！")
+    print("\n請輸入您的會議問題（輸入 exit 結束）：")
+    user_question = input("> ").strip()
+
+    if user_question.lower() == "exit":
+        print("\n👋 感謝使用 AI 會議助理！")
         break
+
+    if not user_question:
+        print("⚠️  請輸入非空白的問題。")
+        continue
 
     try:
         print("📝 建立 Crew...")
         crew = build_crew(user_question)
 
-        print("🔄 執行任務...")
+        print("🔄 執行任務中，請稍候...")
         result = crew.kickoff()
 
-        print("\n✅ 最終建議輸出：\n")
+        # 儲存對話紀錄
+        conversation_history.append({"question": user_question, "answer": result})
+
+        # 顯示最新回應
+        print("\n✅ 分析完成：\n")
         print(result)
+
+        # 顯示完整對話紀錄
+        print("\n📜 對話紀錄：")
+        for idx, entry in enumerate(conversation_history, 1):
+            print(f"{idx}. 問題：{entry['question']}")
+            print(f"   回應：{entry['answer']}\n")
 
     except Exception as e:
         print("\n❌ 執行過程中發生錯誤：")

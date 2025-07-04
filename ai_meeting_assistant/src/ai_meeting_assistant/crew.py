@@ -101,12 +101,6 @@ def build_crew(user_question: str):
         作為專業會計師，請針對以下問題從財務與稅務角度提供分析：
         
         問題：{user_question}
-        
-        請提供：
-        1. 財務影響分析
-        2. 稅務考量
-        3. 風險評估
-        4. 具體建議
         """,
         expected_output="詳細的財務分析報告，包含稅務建議和風險評估",
         agent=agents["accountant"]
@@ -119,11 +113,6 @@ def build_crew(user_question: str):
         
         問題：{user_question}
         
-        請提供：
-        1. 法律風險評估
-        2. 合規要求
-        3. 法律結構建議
-        4. 整合財務與法律的綜合建議
         """,
         expected_output="完整的法律分析報告，結合財務考量提供綜合建議",
         agent=agents["lawyer"],
