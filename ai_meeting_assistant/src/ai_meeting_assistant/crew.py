@@ -2,8 +2,7 @@ import os
 import yaml
 from dotenv import load_dotenv
 
-from langchain_community.chat_models import ChatOpenAI
-from langchain_google_genai import GoogleGenerativeAI
+from langchain_openai import ChatOpenAI
 from crewai import Agent, Task, Crew, Process
 
 # 讀取環境變數
@@ -18,24 +17,14 @@ this_dir = os.path.dirname(__file__)
 agents_config = load_yaml_config(os.path.join(this_dir, "config/agents.yaml"))
 
 # ---------- 建立 LLM ----------
-openai_llm = ChatOpenAI(model_name="gpt-4", temperature=0.3)
-gemini_llm = GoogleGenerativeAI(
-    model="gemini-pro",
-    api_key=os.getenv("GOOGLE_API_KEY"),
-    temperature=0.3
-)
+openai_llm = ChatOpenAI(model="gpt-4", temperature=0.3)
 
 # ---------- 建立 Agents ----------
-agent_llm_map = {
-    "accountant": openai_llm,
-    "lawyer": gemini_llm
-}
-
 agents = {}
 for agent_id, config in agents_config.items():
     agents[agent_id] = Agent(
         config=config,
-        llm=agent_llm_map.get(agent_id)
+        llm=openai_llm
     )
 
 # ---------- 建立任務流程（用程式定義） ----------
@@ -51,11 +40,11 @@ def build_crew(user_question: str):
 
     legal_task = Task(
         description=(
-            "以下是會計師提供的分析：\n{analyze_task}\n\n"
-            "你是律師，請從法律角度補充建議，並指出潛在法律風險與合規建議。"
+            "你是律師，請根據會計師的分析結果，從法律角度補充建議，並指出潛在法律風險與合規建議。"
         ),
         expected_output="法律補充建議",
-        agent=agents["lawyer"]
+        agent=agents["lawyer"],
+        context=[analyze_task]
     )
 
     crew = Crew(
