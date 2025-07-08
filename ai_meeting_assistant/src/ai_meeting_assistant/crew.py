@@ -160,6 +160,53 @@ def build_custom_crew(user_question: str, role1: dict, role2: dict):
 
     return crew, task1, task2
 
+def build_memory_agent_task(
+    user_question: str,
+    role_name: str,
+    backstory: str,
+    task_instruction: str,
+    history_log: list,
+    llm_instance
+):
+    from crewai import Agent, Task, Crew
+
+    # 整理上下文歷史
+    history = ""
+    for entry in history_log:
+        history += f"- 使用者：{entry['user']}\n"
+        history += f"  {entry['agent']} 回覆：{entry['reply']}\n"
+
+    # 建立 Agent
+    agent = Agent(
+        role=role_name,
+        goal=task_instruction,
+        backstory=backstory,
+        llm=llm_instance,
+        verbose=True
+    )
+
+    # 建立任務
+    task = Task(
+        description=f"""你是 {role_name}，請根據以下歷史對話與使用者的新問題進行回覆：
+
+{history}
+
+🔎 使用者的新提問：
+{user_question}
+""",
+        expected_output="請提供專業且有上下文連貫的回應建議",
+        agent=agent
+    )
+
+    crew = Crew(
+        agents=[agent],
+        tasks=[task],
+        process=Process.sequential,
+        verbose=True
+    )
+
+    return crew, task
+
 
 # 增加測試執行區塊
 if __name__ == "__main__":

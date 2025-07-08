@@ -1,66 +1,82 @@
 import streamlit as st
-from crew import build_custom_crew  # 要改 crew.py，見下方
+from crew import build_memory_agent_task, openai_llm
 
-st.set_page_config(page_title="🧠 AI 多角色會議助手", layout="wide")
-st.title("🧠 AI 多角色會議助手")
+st.set_page_config(page_title="AI 輪替式會議助手", layout="wide")
+st.title("🧠 AI 輪替式會議助手（單一角色 + 上下文記憶）")
 
-st.markdown("請自訂兩位角色的名稱、背景與任務，然後輸入會議問題進行分析。")
+# 角色設定
+st.subheader("👥 自訂兩位角色")
+col1, col2 = st.columns(2)
+with col1:
+    role1_name = st.text_input("角色 1 名稱", value="會計師")
+    role1_backstory = st.text_area("角色 1 背景", value="擁有豐富稅務與財務管理經驗的會計師")
+    role1_task = st.text_area("角色 1 任務", value="從財務與稅務角度提供建議")
+with col2:
+    role2_name = st.text_input("角色 2 名稱", value="律師")
+    role2_backstory = st.text_area("角色 2 背景", value="熟悉商業合規與公司法的律師")
+    role2_task = st.text_area("角色 2 任務", value="從法律角度分析問題並提供建議")
 
-# 🧩 角色 1 設定
-st.subheader("🧑‍💼 角色 1")
-role1_name = st.text_input("角色 1 名稱", value="行銷顧問")
-role1_backstory = st.text_area("角色 1 背景", value="擅長品牌策略與行銷分析的顧問，具有豐富產品上市經驗。")
-role1_task = st.text_area("角色 1 任務", value="請從行銷策略與市場分析角度分析問題。")
+# 初始化對話歷史
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
 
-# 🧩 角色 2 設定
-st.subheader("🧑‍💼 角色 2")
-role2_name = st.text_input("角色 2 名稱", value="法務顧問")
-role2_backstory = st.text_area("角色 2 背景", value="熟悉合約與智慧財產權的律師，專注於商業合規。")
-role2_task = st.text_area("角色 2 任務", value="請從法律與合約風險角度提供意見。")
+# 🔹 不使用 key，改用 local 變數接輸入
+st.subheader("💬 請輸入您的會議問題：")
+user_input = st.text_input("您的問題：", value="")
 
-# 問題輸入
-user_input = st.chat_input("請輸入您的會議問題...")
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# 角色按鈕
+col_btn1, col_btn2 = st.columns(2)
+selected_role = None
+role_cfg = None
+run_task = False
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+if col_btn1.button(f"📊 {role1_name}回覆", use_container_width=True) and user_input.strip():
+    selected_role = role1_name
+    role_cfg = {
+        "name": role1_name,
+        "backstory": role1_backstory,
+        "task": role1_task
+    }
+    run_task = True
 
-if user_input:
-    st.chat_message("user").markdown(user_input)
-    st.session_state.messages.append({"role": "user", "content": user_input})
+if col_btn2.button(f"⚖️ {role2_name}回覆", use_container_width=True) and user_input.strip():
+    selected_role = role2_name
+    role_cfg = {
+        "name": role2_name,
+        "backstory": role2_backstory,
+        "task": role2_task
+    }
+    run_task = True
 
-    with st.chat_message("assistant"):
-        with st.spinner("兩位角色正在分析中..."):
-            try:
-                crew, task1, task2 = build_custom_crew(
-                    user_question=user_input,
-                    role1={
-                        "name": role1_name,
-                        "backstory": role1_backstory,
-                        "task": role1_task
-                    },
-                    role2={
-                        "name": role2_name,
-                        "backstory": role2_backstory,
-                        "task": role2_task
-                    }
-                )
-                result = crew.kickoff()
+# 🔁 執行任務邏輯
+if run_task and role_cfg:
+    st.session_state.chat_history.append({
+        "user": user_input,
+        "agent": "user",
+        "reply": ""
+    })
 
-                reply = f"""🧑‍💼 **{role1_name} 回覆**：
-{task1.output}
+    with st.spinner(f"{selected_role} 正在分析..."):
+        crew, task = build_memory_agent_task(
+            user_question=user_input,
+            role_name=role_cfg["name"],
+            backstory=role_cfg["backstory"],
+            task_instruction=role_cfg["task"],
+            history_log=st.session_state.chat_history,
+            llm_instance=openai_llm
+        )
+        result = crew.kickoff()
 
----
+        st.success(f"{selected_role} 回覆：\n\n{task.output}")
+        st.session_state.chat_history.append({
+            "user": user_input,
+            "agent": selected_role,
+            "reply": task.output
+        })
 
-🧑‍💼 **{role2_name} 回覆**：
-{task2.output}
-"""
-                st.markdown(reply)
-                st.session_state.messages.append({"role": "assistant", "content": reply})
-
-            except Exception as e:
-                error_msg = f"❌ 發生錯誤：{e}"
-                st.error(error_msg)
-                st.session_state.messages.append({"role": "assistant", "content": error_msg})
+# 🧾 對話歷史區塊
+st.divider()
+st.subheader("🗂️ 歷史對話")
+for entry in st.session_state.chat_history:
+    if entry["agent"] != "user":
+        st.markdown(f"**🧑‍💼 {entry['agent']} 回覆：**\n{entry['reply']}")
