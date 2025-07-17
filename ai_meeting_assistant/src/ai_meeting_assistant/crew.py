@@ -3,13 +3,13 @@ import yaml
 from dotenv import load_dotenv
 
 from langchain_openai import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from crewai import Agent, Task, Crew, Process
-from .tools.web_search_tool import WebSearchTool
 
-# 🔌 載入環境變數
+# 讀取環境變數
 load_dotenv()
 
-# 📁 載入 YAML 設定
+# ---------- 讀取 YAML ----------
 def load_yaml_config(path):
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
@@ -17,10 +17,10 @@ def load_yaml_config(path):
 this_dir = os.path.dirname(__file__)
 agents_config = load_yaml_config(os.path.join(this_dir, "config/agents.yaml"))
 
-# 🔮 LLM 初始化
+# ---------- 建立 LLM ----------
 try:
     openai_llm = ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o",  # 使用 .env 中定義的模型
         temperature=0.3,
         openai_api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -29,9 +29,10 @@ except Exception as e:
     print(f"❌ OpenAI LLM 初始化失敗: {e}")
     openai_llm = None
 
+# 為了穩定性，暫時兩個 agent 都使用 OpenAI
 try:
     openai_llm_lawyer = ChatOpenAI(
-        model="gpt-4o",
+        model="gpt-4o",  # 使用相同的模型但不同的實例
         temperature=0.3,
         openai_api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -40,49 +41,71 @@ except Exception as e:
     print(f"❌ Lawyer OpenAI LLM 初始化失敗: {e}")
     openai_llm_lawyer = None
 
-# 🧰 導入自定工具
-web_search_tool = WebSearchTool()
+# Gemini LLM 暫時作為備用
+try:
+    gemini_llm = ChatGoogleGenerativeAI(
+        model="gemini-1.5-pro",  # 簡化模型名稱
+        temperature=0.3,
+        google_api_key=os.getenv("GOOGLE_API_KEY")
+    )
+    print("✅ Gemini LLM 初始化成功")
+except Exception as e:
+    print(f"❌ Gemini LLM 初始化失敗: {e}")
+    gemini_llm = None
 
-# 🤖 建立 Agents
+# ---------- 建立 Agents ----------
 agents = {}
 
+# 會計師使用 OpenAI
 if openai_llm is not None:
+    accountant_cfg = agents_config["accountant"]
     agents["accountant"] = Agent(
-        role=agents_config["accountant"]["role"],
-        goal=agents_config["accountant"]["goal"],
-        backstory=agents_config["accountant"]["backstory"],
+        role=accountant_cfg["role"],
+        goal=accountant_cfg["goal"],
+        backstory=accountant_cfg["backstory"],
         llm=openai_llm,
-        tools=[web_search_tool],
         verbose=True
     )
     print("✅ Accountant agent 創建成功")
 else:
     print("❌ 無法創建 Accountant agent - OpenAI LLM 未初始化")
 
+# 律師優先使用專用的 OpenAI 實例確保穩定性
+lawyer_cfg = agents_config["lawyer"]
 if openai_llm_lawyer is not None:
     agents["lawyer"] = Agent(
-        role=agents_config["lawyer"]["role"],
-        goal=agents_config["lawyer"]["goal"],
-        backstory=agents_config["lawyer"]["backstory"],
-        llm=openai_llm_lawyer,
-        tools=[web_search_tool],
+        role=lawyer_cfg["role"],
+        goal=lawyer_cfg["goal"],
+        backstory=lawyer_cfg["backstory"],
+        llm=openai_llm_lawyer,  # 使用專用的 OpenAI 實例
         verbose=True
     )
     print("✅ Lawyer agent (OpenAI) 創建成功")
+elif gemini_llm is not None:
+    agents["lawyer"] = Agent(
+        role=lawyer_cfg["role"],
+        goal=lawyer_cfg["goal"],
+        backstory=lawyer_cfg["backstory"],
+        llm=gemini_llm,
+        verbose=True
+    )
+    print("✅ Lawyer agent (Gemini) 創建成功")
 else:
-    print("❌ 無法創建 Lawyer agent - OpenAI LLM 未初始化")
+    print("❌ 無法創建 Lawyer agent - 所有 LLM 都未初始化")
 
-# 🧠 組裝預設任務流程
+# ---------- 建立任務流程（用程式定義） ----------
 def build_crew(user_question: str, accountant_backstory=None, accountant_task=None,
                lawyer_backstory=None, lawyer_task=None):
     if not agents or "accountant" not in agents or "lawyer" not in agents:
         raise Exception("❌ 必須有會計師和律師 agents")
 
+    # 如果使用者自訂了 backstory，動態更新
     if accountant_backstory:
         agents["accountant"].config.backstory = accountant_backstory
     if lawyer_backstory:
         agents["lawyer"].config.backstory = lawyer_backstory
 
+    # 動態任務說明
     analyze_task = Task(
         description=f"{accountant_task or '請從財務與稅務角度提供建議與風險分析。'}\n\n問題：{user_question}",
         expected_output="詳細的財務分析報告，包含稅務建議和風險評估",
@@ -104,14 +127,15 @@ def build_crew(user_question: str, accountant_backstory=None, accountant_task=No
     )
     return crew, analyze_task, legal_task
 
-# 🧩 客製兩角色流程
+from crewai import Agent
+
 def build_custom_crew(user_question: str, role1: dict, role2: dict):
+    # LLM 初始化（你已有 openai_llm）
     agent1 = Agent(
         role=role1["name"],
         goal=role1["task"],
         backstory=role1["backstory"],
         llm=openai_llm,
-        tools=[web_search_tool],
         verbose=True
     )
     agent2 = Agent(
@@ -119,7 +143,6 @@ def build_custom_crew(user_question: str, role1: dict, role2: dict):
         goal=role2["task"],
         backstory=role2["backstory"],
         llm=openai_llm_lawyer or openai_llm,
-        tools=[web_search_tool],
         verbose=True
     )
 
@@ -142,9 +165,9 @@ def build_custom_crew(user_question: str, role1: dict, role2: dict):
         process=Process.sequential,
         verbose=True
     )
+
     return crew, task1, task2
 
-# 🧠 記憶型單 agent 模式
 def build_memory_agent_task(
     user_question: str,
     role_name: str,
@@ -153,20 +176,24 @@ def build_memory_agent_task(
     history_log: list,
     llm_instance
 ):
+    from crewai import Agent, Task, Crew
+
+    # 整理上下文歷史
     history = ""
     for entry in history_log:
         history += f"- 使用者：{entry['user']}\n"
         history += f"  {entry['agent']} 回覆：{entry['reply']}\n"
 
+    # 建立 Agent
     agent = Agent(
         role=role_name,
         goal=task_instruction,
         backstory=backstory,
         llm=llm_instance,
-        tools=[web_search_tool],
         verbose=True
     )
 
+    # 建立任務
     task = Task(
         description=f"""你是 {role_name}，請根據以下歷史對話與使用者的新問題進行回覆：
 
@@ -185,16 +212,20 @@ def build_memory_agent_task(
         process=Process.sequential,
         verbose=True
     )
+
     return crew, task
 
 
-# ✅ 快速測試（可略過）
+# 增加測試執行區塊
 if __name__ == "__main__":
-    print("\n--- 正在測試 CrewAI 任務 ---")
+    print("\n--- 正在測試 CrewAI 簡化任務 ---")
     try:
-        test_crew, task1, task2 = build_crew("現在查一下台灣最低工資是多少")
+        # 使用一個簡短且無爭議的問題來測試
+        test_crew = build_crew("測試問題。")
         result = test_crew.kickoff()
-        print("\n--- 測試成功 ---")
+        print("\n--- Crew AI 處理結果 ---")
         print(result)
+        print("✅ CrewAI 簡化任務測試成功！")
     except Exception as e:
-        print(f"❌ 測試失敗：{e}")
+        print(f"❌ CrewAI 簡化任務測試失敗：{e}")
+        print("如果這裡仍然是 BadRequestError，問題可能更複雜。")
