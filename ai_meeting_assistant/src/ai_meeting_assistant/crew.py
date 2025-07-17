@@ -61,6 +61,7 @@ if openai_llm:
         goal=accountant_cfg["goal"],
         backstory=accountant_cfg["backstory"],
         llm=openai_llm,
+        allow_tools=False,
         verbose=True
     )
     print("✅ Accountant agent 創建成功")
@@ -74,6 +75,7 @@ if openai_llm_lawyer:
         goal=lawyer_cfg["goal"],
         backstory=lawyer_cfg["backstory"],
         llm=openai_llm_lawyer,
+        allow_tools=False,
         verbose=True
     )
     print("✅ Lawyer agent (OpenAI) 創建成功")
@@ -83,6 +85,7 @@ elif gemini_llm:
         goal=lawyer_cfg["goal"],
         backstory=lawyer_cfg["backstory"],
         llm=gemini_llm,
+        allow_tools=False,
         verbose=True
     )
     print("✅ Lawyer agent (Gemini) 創建成功")
@@ -103,14 +106,18 @@ def build_crew(user_question: str, accountant_backstory=None, accountant_task=No
     analyze_task = Task(
         description=f"{accountant_task or '請從財務與稅務角度提供建議與風險分析。'}\n\n問題：{user_question}",
         expected_output="詳細的財務分析報告，包含稅務建議和風險評估",
-        agent=agents["accountant"]
+        agent=agents["accountant"],
+        allow_tools=False,
+        verbose=True
     )
 
     legal_task = Task(
         description=f"{lawyer_task or '請從法律角度提供建議與合規分析，並結合財務考量。'}\n\n問題：{user_question}",
         expected_output="完整的法律分析報告，結合財務考量提供綜合建議",
         agent=agents["lawyer"],
-        context=[analyze_task]
+        context=[analyze_task],
+        allow_tools=False,
+        verbose=True
     )
 
     crew = Crew(
@@ -127,6 +134,7 @@ def build_custom_crew(user_question: str, role1: dict, role2: dict):
         goal=role1["task"],
         backstory=role1["backstory"],
         llm=openai_llm,
+        allow_tools=False,
         verbose=True
     )
     agent2 = Agent(
@@ -134,27 +142,30 @@ def build_custom_crew(user_question: str, role1: dict, role2: dict):
         goal=role2["task"],
         backstory=role2["backstory"],
         llm=openai_llm_lawyer or openai_llm,
+        allow_tools=False,
         verbose=True
     )
 
     task1 = Task(
         description=f"{role1['task']}\n\n問題：{user_question}",
         expected_output="完整分析建議",
-        agent=agent1
+        agent=agent1,
+        verbose=False
     )
 
     task2 = Task(
         description=f"{role2['task']}\n\n問題：{user_question}",
         expected_output="結合第一位角色意見的分析與建議",
         agent=agent2,
-        context=[task1]
+        context=[task1],
+        verbose=False
     )
 
     crew = Crew(
         agents=[agent1, agent2],
         tasks=[task1, task2],
         process=Process.sequential,
-        verbose=True
+        verbose=False
     )
     return crew, task1, task2
 
@@ -178,6 +189,7 @@ def build_memory_agent_task(
         goal=task_instruction,
         backstory=backstory,
         llm=llm_instance,
+        allow_tools=False,
         verbose=True
     )
 
@@ -195,7 +207,8 @@ def build_memory_agent_task(
     task = Task(
         description=description,
         expected_output="請提供專業且有上下文連貫的回應建議",
-        agent=agent
+        agent=agent,
+        verbose=True
     )
 
     crew = Crew(

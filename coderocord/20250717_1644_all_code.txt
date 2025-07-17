@@ -12,7 +12,12 @@ dependencies = [
     "langchain-openai>=0.1.0",
     "langchain-google-genai>=1.0.0",
     "python-dotenv>=1.0.0",
-    "pyyaml>=6.0.0"
+    "pyyaml>=6.0.0",
+    "python-docx>=0.8.11",
+    "PyPDF2>=3.0.1",
+    "pandas>=2.2.0",
+    "openpyxl>=3.1.2",
+
 ]
 
 [project.scripts]
@@ -152,6 +157,9 @@ with open(output_file, 'w', encoding='utf-8') as out:
 print(f"\n✅ 輸出完成，請查看 {output_file}")
 
 
+=== ai_meeting_assistant/coderocord/20250717_1643_all_code.txt ===
+
+
 === ai_meeting_assistant/saved_chats/逃漏稅囉.json ===
 {
   "meeting_name": "逃漏稅囉",
@@ -186,6 +194,63 @@ print(f"\n✅ 輸出完成，請查看 {output_file}")
     "name": "律師",
     "backstory": "熟悉商業合規與公司法的律師",
     "task": "從法律角度分析問題並提供建議"
+  }
+}
+
+=== ai_meeting_assistant/saved_chats/補助案討論.json ===
+{
+  "meeting_name": "補助案討論",
+  "chat_history": [
+    {
+      "user": "你對這個補助案的看法是什麼？",
+      "agent": "user",
+      "reply": ""
+    },
+    {
+      "user": "你對這個補助案的看法是什麼？",
+      "agent": "理事",
+      "reply": "這個補助案旨在促進友善工作環境，並與民間團體合作推動工作場所性騷擾防治。申請單位需具備相關議題的長期關注，並在申請時提供詳細的計畫書和預算。補助金額最高可達計畫總經費的95%，但不超過新臺幣25萬元。審查過程注重計畫的完整性和可行性，並優先考慮特定地區的計畫。申請單位需遵循財務管理規範，並確保報告的真實性。總體而言，這是促進安全工作環境的良好機會，但需謹慎計畫和執行以確保合規和最大化效益。"
+    },
+    {
+      "user": "請簡單的規劃執行方向",
+      "agent": "user",
+      "reply": ""
+    },
+    {
+      "user": "請簡單的規劃執行方向",
+      "agent": "理事",
+      "reply": "根據提供的補助指引和背景，以下是一個簡單的執行計劃，用於申請和實施工作場所性騷擾防治宣導活動：\n\n1. **確定目標和受眾：**\n   - 明確定義項目的目的，專注於促進友善的工作環境和防止工作場所性騷擾。\n   - 確定宣導活動的目標受眾和地區，優先考慮彰化、南投、雲林、嘉義、台南、高雄、屏東、台東、花蓮、連江、金門和澎湖等地，因為這些地區是優先補助對象。\n\n2. **制定詳細計劃：**\n   - 創建詳細的項目計劃，包括項目名稱、目標、具體活動（如研習會、專題講座和培訓課程）、時間表和預期成果。\n   - 概述執行項目的策略和方法，確保其可行性並符合補助要求。\n\n3. **預算規劃：**\n   - 準備詳細的預算，遵循資金指引，涵蓋講座鐘點費、專家學者交通與住宿費、場地租賃和材料等合格支出。\n   - 確保預算不超過計畫總經費的95%或新台幣25萬元的最高補助限額。\n\n4. **準備申請文件：**\n   - 收集所有必要文件，包括申請書、實施計畫書、經費概算表和組織合法設立的證明。\n   - 確保所有文件完整並在申請期限內提交，以避免資格被取消。\n\n5. **實施和監控：**\n   - 根據核准的計畫執行項目，保持所有活動和財務交易的透明度和問責性。\n   - 監控宣導活動的進展和效果，根據需要進行調整以達成預期成果。\n\n6. **報告和評估：**\n   - 項目完成後，準備一份詳細的報告，說明所進行的活動、達成的成果和財務支出。\n   - 在指定的截止日期前，提交所有所需文件以進行財務驗證和最終報告給勞動部。\n\n7. **合規和跟進：**\n   - 確保遵守補助中列出的所有規定和指引，包括適當的文件和財務管理。\n   - 保留所有記錄和文件至少五年，以備勞動部可能的審計和評估。\n\n通過遵循這一結構化的方法，組織可以有效地計劃、執行和報告工作場所性騷擾防治宣導活動，最大化影響並確保符合補助要求。"
+    },
+    {
+      "user": "你覺得可以舉辦哪些活動？",
+      "agent": "user",
+      "reply": ""
+    },
+    {
+      "user": "你覺得可以舉辦哪些活動？",
+      "agent": "理事",
+      "reply": "根據勞動部的補助指引，我們可以設計一些活動來推動工作場所性騷擾防治宣導。以下是一些建議的活動類型：\n\n1. **研習會和專題講座：**\n   - 邀請專家學者進行工作場所性騷擾防治的專題演講，分享最新的研究成果和實務經驗。\n   - 針對不同職業群體設計專門的研習會，提供具體的防治策略和案例分析。\n\n2. **教育訓練：**\n   - 為企業管理層和人力資源部門提供專業的性騷擾防治培訓，強化他們的應對能力。\n   - 開展員工教育課程，提高全體員工對性騷擾的認識和防範意識。\n\n3. **宣導活動：**\n   - 在企業內部或公共場所舉辦宣導活動，如展覽、海報展示和互動工作坊，提升大眾對性騷擾問題的關注。\n   - 利用社交媒體平台進行線上宣導，擴大影響範圍。\n\n4. **被害人保護及扶助措施：**\n   - 設立專線或諮詢服務，為性騷擾受害者提供法律和心理支持。\n   - 舉辦支持小組會議，為受害者提供一個安全的分享和支持空間。\n\n5. **其他創新活動：**\n   - 開展角色扮演或模擬場景活動，讓參與者親身體驗和理解性騷擾的影響。\n   - 與當地社區或學校合作，舉辦性別平等和防治性騷擾的教育活動，從源頭上提高認識。\n\n這些活動不僅能夠提高公眾對性騷擾問題的認識，還能促進友善和安全的工作環境的建立。通過多元化的活動形式，我們可以更有效地傳達性騷擾防治的重要性。"
+    },
+    {
+      "user": "提供一點建議",
+      "agent": "user",
+      "reply": ""
+    },
+    {
+      "user": "提供一點建議",
+      "agent": "監事",
+      "reply": "根據提供的補助案資訊和執行計劃，我建議以下幾點以進一步完善計劃：\n\n1. **強化合作夥伴關係：**\n   - 與當地的非政府組織、社區團體或學術機構建立合作關係，這不僅能夠擴大活動的影響力，還能獲得更多的資源和支持。\n\n2. **評估與調整機制：**\n   - 在活動進行中設置定期的評估機制，收集參與者的反饋和建議，以便及時調整活動內容和方式，確保活動的有效性和參與度。\n\n3. **創新宣導方式：**\n   - 除了傳統的研習會和講座，考慮使用數位媒體和互動技術，如線上研討會、虛擬實境體驗等，吸引更多年輕族群的參與。\n\n4. **長期影響追蹤：**\n   - 設立長期的影響追蹤機制，評估活動對工作場所性騷擾防治的實際效果，並根據結果進行後續計劃的調整和優化。\n\n5. **資源管理與透明度：**\n   - 確保所有活動的資源管理透明，並定期向相關利益相關者報告進展和成果，以增強信任和支持。\n\n透過這些建議，申請單位可以更有效地推動工作場所性騷擾防治活動，並確保計劃的長期成功和可持續性。"
+    }
+  ],
+  "role1_cfg": {
+    "name": "理事",
+    "backstory": "你是在NGO服務多年，經驗豐富、邏輯強大、能力強大的理事，協助業務的執行運作",
+    "task": "思考如何執行計劃，給出方法與建議，並提供執行的方針。回應提問與問題。請用繁體中文回答問題。"
+  },
+  "role2_cfg": {
+    "name": "監事",
+    "backstory": "你是一位充滿專業素養的監事，提供執行方法與建議，善用批判思考與哲學思辨，協助完善計劃的運行並找出需要改進的地方",
+    "task": "尋找改進或是可以更加完善的地方，給予建議。請用繁體中文回答問題。"
   }
 }
 
@@ -279,7 +344,7 @@ agents_config = load_yaml_config(os.path.join(this_dir, "config/agents.yaml"))
 # ---------- 建立 LLM ----------
 try:
     openai_llm = ChatOpenAI(
-        model="gpt-4o",  # 使用 .env 中定義的模型
+        model="gpt-4o",
         temperature=0.3,
         openai_api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -288,10 +353,9 @@ except Exception as e:
     print(f"❌ OpenAI LLM 初始化失敗: {e}")
     openai_llm = None
 
-# 為了穩定性，暫時兩個 agent 都使用 OpenAI
 try:
     openai_llm_lawyer = ChatOpenAI(
-        model="gpt-4o",  # 使用相同的模型但不同的實例
+        model="gpt-4o",
         temperature=0.3,
         openai_api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -300,10 +364,9 @@ except Exception as e:
     print(f"❌ Lawyer OpenAI LLM 初始化失敗: {e}")
     openai_llm_lawyer = None
 
-# Gemini LLM 暫時作為備用
 try:
     gemini_llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-pro",  # 簡化模型名稱
+        model="gemini-1.5-pro",
         temperature=0.3,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
@@ -315,8 +378,7 @@ except Exception as e:
 # ---------- 建立 Agents ----------
 agents = {}
 
-# 會計師使用 OpenAI
-if openai_llm is not None:
+if openai_llm:
     accountant_cfg = agents_config["accountant"]
     agents["accountant"] = Agent(
         role=accountant_cfg["role"],
@@ -327,20 +389,19 @@ if openai_llm is not None:
     )
     print("✅ Accountant agent 創建成功")
 else:
-    print("❌ 無法創建 Accountant agent - OpenAI LLM 未初始化")
+    print("❌ 無法創建 Accountant agent")
 
-# 律師優先使用專用的 OpenAI 實例確保穩定性
 lawyer_cfg = agents_config["lawyer"]
-if openai_llm_lawyer is not None:
+if openai_llm_lawyer:
     agents["lawyer"] = Agent(
         role=lawyer_cfg["role"],
         goal=lawyer_cfg["goal"],
         backstory=lawyer_cfg["backstory"],
-        llm=openai_llm_lawyer,  # 使用專用的 OpenAI 實例
+        llm=openai_llm_lawyer,
         verbose=True
     )
     print("✅ Lawyer agent (OpenAI) 創建成功")
-elif gemini_llm is not None:
+elif gemini_llm:
     agents["lawyer"] = Agent(
         role=lawyer_cfg["role"],
         goal=lawyer_cfg["goal"],
@@ -350,21 +411,19 @@ elif gemini_llm is not None:
     )
     print("✅ Lawyer agent (Gemini) 創建成功")
 else:
-    print("❌ 無法創建 Lawyer agent - 所有 LLM 都未初始化")
+    print("❌ 無法創建 Lawyer agent")
 
-# ---------- 建立任務流程（用程式定義） ----------
+# ---------- 任務流程 ----------
 def build_crew(user_question: str, accountant_backstory=None, accountant_task=None,
                lawyer_backstory=None, lawyer_task=None):
     if not agents or "accountant" not in agents or "lawyer" not in agents:
-        raise Exception("❌ 必須有會計師和律師 agents")
+        raise Exception("❌ 需要會計師與律師 agents")
 
-    # 如果使用者自訂了 backstory，動態更新
     if accountant_backstory:
         agents["accountant"].config.backstory = accountant_backstory
     if lawyer_backstory:
         agents["lawyer"].config.backstory = lawyer_backstory
 
-    # 動態任務說明
     analyze_task = Task(
         description=f"{accountant_task or '請從財務與稅務角度提供建議與風險分析。'}\n\n問題：{user_question}",
         expected_output="詳細的財務分析報告，包含稅務建議和風險評估",
@@ -386,10 +445,7 @@ def build_crew(user_question: str, accountant_backstory=None, accountant_task=No
     )
     return crew, analyze_task, legal_task
 
-from crewai import Agent
-
 def build_custom_crew(user_question: str, role1: dict, role2: dict):
-    # LLM 初始化（你已有 openai_llm）
     agent1 = Agent(
         role=role1["name"],
         goal=role1["task"],
@@ -424,26 +480,23 @@ def build_custom_crew(user_question: str, role1: dict, role2: dict):
         process=Process.sequential,
         verbose=True
     )
-
     return crew, task1, task2
 
+# ---------- 支援文件上下文的記憶型任務 ----------
 def build_memory_agent_task(
     user_question: str,
     role_name: str,
     backstory: str,
     task_instruction: str,
     history_log: list,
-    llm_instance
+    llm_instance,
+    extra_context: str = ""
 ):
-    from crewai import Agent, Task, Crew
-
-    # 整理上下文歷史
     history = ""
     for entry in history_log:
         history += f"- 使用者：{entry['user']}\n"
         history += f"  {entry['agent']} 回覆：{entry['reply']}\n"
 
-    # 建立 Agent
     agent = Agent(
         role=role_name,
         goal=task_instruction,
@@ -452,15 +505,19 @@ def build_memory_agent_task(
         verbose=True
     )
 
-    # 建立任務
-    task = Task(
-        description=f"""你是 {role_name}，請根據以下歷史對話與使用者的新問題進行回覆：
+    description = f"""你是 {role_name}，請根據以下歷史對話與使用者的新問題進行回覆：
 
 {history}
 
+以下是使用者提供的輔助文件內容：
+{extra_context}
+
 🔎 使用者的新提問：
 {user_question}
-""",
+"""
+
+    task = Task(
+        description=description,
         expected_output="請提供專業且有上下文連貫的回應建議",
         agent=agent
     )
@@ -471,23 +528,8 @@ def build_memory_agent_task(
         process=Process.sequential,
         verbose=True
     )
-
     return crew, task
 
-
-# 增加測試執行區塊
-if __name__ == "__main__":
-    print("\n--- 正在測試 CrewAI 簡化任務 ---")
-    try:
-        # 使用一個簡短且無爭議的問題來測試
-        test_crew = build_crew("測試問題。")
-        result = test_crew.kickoff()
-        print("\n--- Crew AI 處理結果 ---")
-        print(result)
-        print("✅ CrewAI 簡化任務測試成功！")
-    except Exception as e:
-        print(f"❌ CrewAI 簡化任務測試失敗：{e}")
-        print("如果這裡仍然是 BadRequestError，問題可能更複雜。")
 
 === ai_meeting_assistant/src/ai_meeting_assistant/app.py ===
 import streamlit as st
@@ -499,12 +541,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from src.ai_meeting_assistant.crew import build_memory_agent_task, openai_llm
 
 st.set_page_config(page_title="AI 輪替式會議助手", layout="wide")
-st.title("🧠 AI 輪替式會議助手（含角色與主題記憶功能）")
+st.title("🧠 AI 輪替式會議助手（含角色、主題記憶與文件分析）")
 
 SAVE_DIR = "./saved_chats"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
-# ---------------- 初始化 ----------------
+# ---------------- 預設角色設定 ----------------
 default_role1 = {
     "name": "會計師",
     "backstory": "擁有豐富稅務與財務管理經驗的會計師",
@@ -517,6 +559,7 @@ default_role2 = {
     "task": "從法律角度分析問題並提供建議"
 }
 
+# ---------------- 初始化 Session State ----------------
 if "meeting_name" not in st.session_state:
     st.session_state.meeting_name = "未命名會議"
 if "chat_history" not in st.session_state:
@@ -565,7 +608,7 @@ def load_chat(meeting_name):
 def list_saved_meetings():
     return [f[:-5] for f in os.listdir(SAVE_DIR) if f.endswith(".json")]
 
-# ---------------- Sidebar 模式選擇 ----------------
+# ---------------- Sidebar 模式與檔案上傳 ----------------
 st.sidebar.header("📁 選擇對話模式")
 mode = st.sidebar.radio("請選擇：", ["🆕 開啟新會議", "📂 載入過去會議"])
 
@@ -581,6 +624,38 @@ else:
         st.session_state.chat_history = []
         st.session_state.role1_cfg = default_role1.copy()
         st.session_state.role2_cfg = default_role2.copy()
+
+# 📎 文件上傳
+st.sidebar.header("📎 上傳輔助文件")
+uploaded_files = st.sidebar.file_uploader(
+    "選擇 .pdf, .docx, .xlsx 文件（可複數）",
+    type=["pdf", "docx", "xlsx"],
+    accept_multiple_files=True
+)
+
+uploaded_texts = []
+if uploaded_files:
+    for file in uploaded_files:
+        try:
+            if file.name.endswith(".pdf"):
+                from PyPDF2 import PdfReader
+                reader = PdfReader(file)
+                text = "\n".join([page.extract_text() for page in reader.pages])
+            elif file.name.endswith(".docx"):
+                import docx
+                doc = docx.Document(file)
+                text = "\n".join([para.text for para in doc.paragraphs])
+            elif file.name.endswith(".xlsx"):
+                import pandas as pd
+                df = pd.read_excel(file)
+                text = df.to_markdown()
+            else:
+                text = f"{file.name} 格式不支援"
+            uploaded_texts.append(f"📄 {file.name}:\n{text}")
+        except Exception as e:
+            uploaded_texts.append(f"⚠️ 無法解析 {file.name}：{e}")
+
+doc_context = "\n\n".join(uploaded_texts)
 
 # ---------------- Header: 主題與儲存 ----------------
 st.markdown("### 💼 當前會議主題")
@@ -640,7 +715,8 @@ if run_task and role_cfg:
             backstory=role_cfg["backstory"],
             task_instruction=role_cfg["task"],
             history_log=st.session_state.chat_history,
-            llm_instance=openai_llm
+            llm_instance=openai_llm,
+            extra_context=doc_context
         )
         result = crew.kickoff()
         reply_text = get_output_text(task.output)
@@ -831,3 +907,23 @@ analyze_from_accounting:
     詳細建議與說明
   agent: accountant
 
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/main.cpython-311.pyc ===
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/main.cpython-311.pyc ===
+[無法讀取此檔案: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte]
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/crew.cpython-311.pyc ===
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/crew.cpython-311.pyc ===
+[無法讀取此檔案: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte]
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/__init__.cpython-311.pyc ===
+
+
+=== ai_meeting_assistant/src/ai_meeting_assistant/__pycache__/__init__.cpython-311.pyc ===
+[無法讀取此檔案: 'utf-8' codec can't decode byte 0xa7 in position 0: invalid start byte]
