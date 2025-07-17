@@ -20,7 +20,7 @@ agents_config = load_yaml_config(os.path.join(this_dir, "config/agents.yaml"))
 # ---------- 建立 LLM ----------
 try:
     openai_llm = ChatOpenAI(
-        model="gpt-4o",  # 使用 .env 中定義的模型
+        model="gpt-4o",
         temperature=0.3,
         openai_api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -29,10 +29,9 @@ except Exception as e:
     print(f"❌ OpenAI LLM 初始化失敗: {e}")
     openai_llm = None
 
-# 為了穩定性，暫時兩個 agent 都使用 OpenAI
 try:
     openai_llm_lawyer = ChatOpenAI(
-        model="gpt-4o",  # 使用相同的模型但不同的實例
+        model="gpt-4o",
         temperature=0.3,
         openai_api_key=os.getenv("OPENAI_API_KEY")
     )
@@ -41,10 +40,9 @@ except Exception as e:
     print(f"❌ Lawyer OpenAI LLM 初始化失敗: {e}")
     openai_llm_lawyer = None
 
-# Gemini LLM 暫時作為備用
 try:
     gemini_llm = ChatGoogleGenerativeAI(
-        model="gemini-1.5-pro",  # 簡化模型名稱
+        model="gemini-1.5-pro",
         temperature=0.3,
         google_api_key=os.getenv("GOOGLE_API_KEY")
     )
@@ -56,8 +54,7 @@ except Exception as e:
 # ---------- 建立 Agents ----------
 agents = {}
 
-# 會計師使用 OpenAI
-if openai_llm is not None:
+if openai_llm:
     accountant_cfg = agents_config["accountant"]
     agents["accountant"] = Agent(
         role=accountant_cfg["role"],
@@ -68,20 +65,19 @@ if openai_llm is not None:
     )
     print("✅ Accountant agent 創建成功")
 else:
-    print("❌ 無法創建 Accountant agent - OpenAI LLM 未初始化")
+    print("❌ 無法創建 Accountant agent")
 
-# 律師優先使用專用的 OpenAI 實例確保穩定性
 lawyer_cfg = agents_config["lawyer"]
-if openai_llm_lawyer is not None:
+if openai_llm_lawyer:
     agents["lawyer"] = Agent(
         role=lawyer_cfg["role"],
         goal=lawyer_cfg["goal"],
         backstory=lawyer_cfg["backstory"],
-        llm=openai_llm_lawyer,  # 使用專用的 OpenAI 實例
+        llm=openai_llm_lawyer,
         verbose=True
     )
     print("✅ Lawyer agent (OpenAI) 創建成功")
-elif gemini_llm is not None:
+elif gemini_llm:
     agents["lawyer"] = Agent(
         role=lawyer_cfg["role"],
         goal=lawyer_cfg["goal"],
@@ -91,21 +87,19 @@ elif gemini_llm is not None:
     )
     print("✅ Lawyer agent (Gemini) 創建成功")
 else:
-    print("❌ 無法創建 Lawyer agent - 所有 LLM 都未初始化")
+    print("❌ 無法創建 Lawyer agent")
 
-# ---------- 建立任務流程（用程式定義） ----------
+# ---------- 任務流程 ----------
 def build_crew(user_question: str, accountant_backstory=None, accountant_task=None,
                lawyer_backstory=None, lawyer_task=None):
     if not agents or "accountant" not in agents or "lawyer" not in agents:
-        raise Exception("❌ 必須有會計師和律師 agents")
+        raise Exception("❌ 需要會計師與律師 agents")
 
-    # 如果使用者自訂了 backstory，動態更新
     if accountant_backstory:
         agents["accountant"].config.backstory = accountant_backstory
     if lawyer_backstory:
         agents["lawyer"].config.backstory = lawyer_backstory
 
-    # 動態任務說明
     analyze_task = Task(
         description=f"{accountant_task or '請從財務與稅務角度提供建議與風險分析。'}\n\n問題：{user_question}",
         expected_output="詳細的財務分析報告，包含稅務建議和風險評估",
@@ -127,10 +121,7 @@ def build_crew(user_question: str, accountant_backstory=None, accountant_task=No
     )
     return crew, analyze_task, legal_task
 
-from crewai import Agent
-
 def build_custom_crew(user_question: str, role1: dict, role2: dict):
-    # LLM 初始化（你已有 openai_llm）
     agent1 = Agent(
         role=role1["name"],
         goal=role1["task"],
@@ -165,26 +156,23 @@ def build_custom_crew(user_question: str, role1: dict, role2: dict):
         process=Process.sequential,
         verbose=True
     )
-
     return crew, task1, task2
 
+# ---------- 支援文件上下文的記憶型任務 ----------
 def build_memory_agent_task(
     user_question: str,
     role_name: str,
     backstory: str,
     task_instruction: str,
     history_log: list,
-    llm_instance
+    llm_instance,
+    extra_context: str = ""
 ):
-    from crewai import Agent, Task, Crew
-
-    # 整理上下文歷史
     history = ""
     for entry in history_log:
         history += f"- 使用者：{entry['user']}\n"
         history += f"  {entry['agent']} 回覆：{entry['reply']}\n"
 
-    # 建立 Agent
     agent = Agent(
         role=role_name,
         goal=task_instruction,
@@ -193,15 +181,19 @@ def build_memory_agent_task(
         verbose=True
     )
 
-    # 建立任務
-    task = Task(
-        description=f"""你是 {role_name}，請根據以下歷史對話與使用者的新問題進行回覆：
+    description = f"""你是 {role_name}，請根據以下歷史對話與使用者的新問題進行回覆：
 
 {history}
 
+以下是使用者提供的輔助文件內容：
+{extra_context}
+
 🔎 使用者的新提問：
 {user_question}
-""",
+"""
+
+    task = Task(
+        description=description,
         expected_output="請提供專業且有上下文連貫的回應建議",
         agent=agent
     )
@@ -212,20 +204,4 @@ def build_memory_agent_task(
         process=Process.sequential,
         verbose=True
     )
-
     return crew, task
-
-
-# 增加測試執行區塊
-if __name__ == "__main__":
-    print("\n--- 正在測試 CrewAI 簡化任務 ---")
-    try:
-        # 使用一個簡短且無爭議的問題來測試
-        test_crew = build_crew("測試問題。")
-        result = test_crew.kickoff()
-        print("\n--- Crew AI 處理結果 ---")
-        print(result)
-        print("✅ CrewAI 簡化任務測試成功！")
-    except Exception as e:
-        print(f"❌ CrewAI 簡化任務測試失敗：{e}")
-        print("如果這裡仍然是 BadRequestError，問題可能更複雜。")

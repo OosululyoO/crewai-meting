@@ -7,12 +7,12 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from src.ai_meeting_assistant.crew import build_memory_agent_task, openai_llm
 
 st.set_page_config(page_title="AI 輪替式會議助手", layout="wide")
-st.title("🧠 AI 輪替式會議助手（含角色與主題記憶功能）")
+st.title("🧠 AI 輪替式會議助手（含角色、主題記憶與文件分析）")
 
 SAVE_DIR = "./saved_chats"
 os.makedirs(SAVE_DIR, exist_ok=True)
 
-# ---------------- 初始化 ----------------
+# ---------------- 預設角色設定 ----------------
 default_role1 = {
     "name": "會計師",
     "backstory": "擁有豐富稅務與財務管理經驗的會計師",
@@ -25,6 +25,7 @@ default_role2 = {
     "task": "從法律角度分析問題並提供建議"
 }
 
+# ---------------- 初始化 Session State ----------------
 if "meeting_name" not in st.session_state:
     st.session_state.meeting_name = "未命名會議"
 if "chat_history" not in st.session_state:
@@ -73,7 +74,7 @@ def load_chat(meeting_name):
 def list_saved_meetings():
     return [f[:-5] for f in os.listdir(SAVE_DIR) if f.endswith(".json")]
 
-# ---------------- Sidebar 模式選擇 ----------------
+# ---------------- Sidebar 模式與檔案上傳 ----------------
 st.sidebar.header("📁 選擇對話模式")
 mode = st.sidebar.radio("請選擇：", ["🆕 開啟新會議", "📂 載入過去會議"])
 
@@ -89,6 +90,38 @@ else:
         st.session_state.chat_history = []
         st.session_state.role1_cfg = default_role1.copy()
         st.session_state.role2_cfg = default_role2.copy()
+
+# 📎 文件上傳
+st.sidebar.header("📎 上傳輔助文件")
+uploaded_files = st.sidebar.file_uploader(
+    "選擇 .pdf, .docx, .xlsx 文件（可複數）",
+    type=["pdf", "docx", "xlsx"],
+    accept_multiple_files=True
+)
+
+uploaded_texts = []
+if uploaded_files:
+    for file in uploaded_files:
+        try:
+            if file.name.endswith(".pdf"):
+                from PyPDF2 import PdfReader
+                reader = PdfReader(file)
+                text = "\n".join([page.extract_text() for page in reader.pages])
+            elif file.name.endswith(".docx"):
+                import docx
+                doc = docx.Document(file)
+                text = "\n".join([para.text for para in doc.paragraphs])
+            elif file.name.endswith(".xlsx"):
+                import pandas as pd
+                df = pd.read_excel(file)
+                text = df.to_markdown()
+            else:
+                text = f"{file.name} 格式不支援"
+            uploaded_texts.append(f"📄 {file.name}:\n{text}")
+        except Exception as e:
+            uploaded_texts.append(f"⚠️ 無法解析 {file.name}：{e}")
+
+doc_context = "\n\n".join(uploaded_texts)
 
 # ---------------- Header: 主題與儲存 ----------------
 st.markdown("### 💼 當前會議主題")
@@ -148,7 +181,8 @@ if run_task and role_cfg:
             backstory=role_cfg["backstory"],
             task_instruction=role_cfg["task"],
             history_log=st.session_state.chat_history,
-            llm_instance=openai_llm
+            llm_instance=openai_llm,
+            extra_context=doc_context
         )
         result = crew.kickoff()
         reply_text = get_output_text(task.output)
