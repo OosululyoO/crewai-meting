@@ -14,6 +14,12 @@ pip install uv
 
 Next, navigate to your project directory and install the dependencies:
 
+```bash
+pip install -r requirements.txt
+```
+
+These dependencies are also defined in `pyproject.toml` for modern build tools.
+
 (Optional) Lock the dependencies and install them by using the CLI command:
 ```bash
 crewai install
