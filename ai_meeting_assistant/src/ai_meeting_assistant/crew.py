@@ -1,3 +1,8 @@
+import pysqlite3  # ensures SQLite ≥3.35
+import sys
+
+sys.modules["sqlite3"] = pysqlite3
+
 import os
 import yaml
 from dotenv import load_dotenv
